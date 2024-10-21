@@ -8,6 +8,7 @@ public class ComboBoxWithImages : Form
 
     public ComboBoxWithImages()
     {
+// https://csharphelper.com/howtos/howto_ownerdraw_combobox.html
         comboBox = new ComboBox();
         comboBox.DrawMode = DrawMode.OwnerDrawFixed;
         comboBox.DropDownStyle = ComboBoxStyle.DropDownList;
