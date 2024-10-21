@@ -1,0 +1,75 @@
+using System;
+using System.Drawing;
+using System.Windows.Forms;
+
+public class ComboBoxWithImages : Form
+{
+    private ComboBox comboBox;
+
+    public ComboBoxWithImages()
+    {
+        comboBox = new ComboBox();
+        comboBox.DrawMode = DrawMode.OwnerDrawFixed;
+        comboBox.DropDownStyle = ComboBoxStyle.DropDownList;
+        comboBox.ItemHeight = 50; // Set item height to accommodate image size
+        comboBox.DrawItem += ComboBox_DrawItem;
+        comboBox.Location = new Point(50, 50);
+        comboBox.Width = 200;
+
+        // Add items to the ComboBox
+        comboBox.Items.Add(new ComboBoxItem("Apple", Image.FromFile("apple.png")));
+        comboBox.Items.Add(new ComboBoxItem("Banana", Image.FromFile("banana.png")));
+        comboBox.Items.Add(new ComboBoxItem("Cherry", Image.FromFile("cherry.png")));
+
+        this.Controls.Add(comboBox);
+        this.Text = "ComboBox with Images";
+        this.Size = new Size(300, 200);
+    }
+
+    private void ComboBox_DrawItem(object sender, DrawItemEventArgs e)
+    {
+        if (e.Index < 0) return;
+
+        // Get the item to draw
+        ComboBoxItem item = (ComboBoxItem)comboBox.Items[e.Index];
+
+        // Draw the background of the item
+        e.DrawBackground();
+
+        // Draw the image
+        if (item.Image != null)
+        {
+            e.Graphics.DrawImage(item.Image, new Rectangle(e.Bounds.Left, e.Bounds.Top, 40, 40));
+        }
+
+        // Draw the text
+        e.Graphics.DrawString(item.Text, e.Font, Brushes.Black, e.Bounds.Left + 45, e.Bounds.Top + 10);
+
+        // Draw the focus rectangle if the ComboBox has focus
+        e.DrawFocusRectangle();
+    }
+
+    [STAThread]
+    public static void Main()
+    {
+        Application.EnableVisualStyles();
+        Application.Run(new ComboBoxWithImages());
+    }
+}
+
+public class ComboBoxItem
+{
+    public string Text { get; set; }
+    public Image Image { get; set; }
+
+    public ComboBoxItem(string text, Image image)
+    {
+        Text = text;
+        Image = image;
+    }
+
+    public override string ToString()
+    {
+        return Text; // This is what will be shown in the ComboBox
+    }
+}
