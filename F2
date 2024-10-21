@@ -1,61 +1,55 @@
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
-using System.Windows.Forms;
-
-namespace ImageCombiner
+namespace test_Image_Combin
 {
+
+
+
     public partial class Form1 : Form
     {
-        private List<Image> images = new List<Image>();
-        private PictureBox pictureBox;
-        private Bitmap combinedImage;
 
-        // Define the Resources path inside the project output directory
-        private string resourcesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources");
 
         public Form1()
         {
             InitializeComponent();
-            SetupUI();
-
-            // Ensure the Resources directory exists
             if (!Directory.Exists(resourcesPath))
             {
                 Directory.CreateDirectory(resourcesPath);
             }
         }
 
-        private void SetupUI()
+
+        private List<Image> images = new List<Image>();
+        private PictureBox pictureBox;
+        private Image combinedImage;
+        private string resourcesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources");
+
+
+        private void Form1_Load(object sender, EventArgs e)
         {
-            // Form properties
             this.Text = "Image Combiner";
             this.Size = new Size(600, 400);
 
-            // Button to load images
             Button loadImagesButton = new Button();
             loadImagesButton.Text = "Load Images";
             loadImagesButton.Location = new Point(20, 20);
             loadImagesButton.Click += new EventHandler(LoadImages);
 
-            // Button to combine images
             Button combineImagesButton = new Button();
             combineImagesButton.Text = "Combine Images";
             combineImagesButton.Location = new Point(120, 20);
             combineImagesButton.Click += new EventHandler(CombineImages);
 
-            // PictureBox to display the combined image
+
             pictureBox = new PictureBox();
             pictureBox.Location = new Point(20, 60);
             pictureBox.Size = new Size(550, 300);
             pictureBox.BorderStyle = BorderStyle.Fixed3D;
 
-            // Add controls to the form
+
             this.Controls.Add(loadImagesButton);
             this.Controls.Add(combineImagesButton);
             this.Controls.Add(pictureBox);
         }
+
 
         private void LoadImages(object sender, EventArgs e)
         {
@@ -67,7 +61,6 @@ namespace ImageCombiner
 
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                // Load selected images
                 images.Clear();
                 foreach (string filename in openFileDialog.FileNames)
                 {
@@ -77,8 +70,10 @@ namespace ImageCombiner
             }
         }
 
+
         private void CombineImages(object sender, EventArgs e)
         {
+
             if (images.Count == 0)
             {
                 MessageBox.Show("No images loaded.");
@@ -110,23 +105,20 @@ namespace ImageCombiner
                 }
             }
 
-            // Display the combined image in the PictureBox
             pictureBox.Image = combinedImage;
 
-            // Automatically save the image in the Resources folder
-            SaveCombinedImageAutomatically();
+
         }
 
-        private void SaveCombinedImageAutomatically()
+
+        private void SaveCombinedImageAutomatically(String Name)
         {
             if (combinedImage != null)
             {
-                // Create a unique file name based on the current timestamp
-                string fileName = Path.Combine(resourcesPath, $"CombinedImage_{DateTime.Now:yyyyMMdd_HHmmss}.jpg");
-
+                string fileName = Path.Combine(resourcesPath, $""+Name+".png");
+                //CombinedImage_{DateTime.Now:yyyyMMdd_HHmmss} or raplace Name with this line in case you want to save a Image as an other date format
                 try
                 {
-                    // Save the image in the Resources folder as a JPG file
                     combinedImage.Save(fileName, System.Drawing.Imaging.ImageFormat.Jpeg);
                     MessageBox.Show($"Image saved successfully at {fileName}");
                 }
@@ -135,6 +127,12 @@ namespace ImageCombiner
                     MessageBox.Show($"Error saving image: {ex.Message}");
                 }
             }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            String nm = textBox1.Text;
+            SaveCombinedImageAutomatically(nm);
         }
     }
 }
