@@ -1,0 +1,360 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+//using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+
+namespace Software
+{
+    public partial class Achslasten : Form
+    {
+        private List<Image> images = new List<Image>();
+        private Image combinedImage;
+        private PictureBox pictureBox;
+        int xPos = 350;
+        private string resourcesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources");
+        int comboBoxCount = 0;
+        int val = 1;
+        ArrayList imageList = new ArrayList();
+        private List<System.Windows.Forms.ComboBox> comboBoxes = new List<System.Windows.Forms.ComboBox>();
+        private List<System.Windows.Forms.TextBox> textBoxes = new List<System.Windows.Forms.TextBox>();
+        private List<System.Windows.Forms.PictureBox> pB = new List<System.Windows.Forms.PictureBox>();
+        PictureBox ps;
+
+        String[,] row = { { "", "", "", "","","","","","","","" },
+          
+            };
+        List<string> list = new List<string>();
+
+
+        private void LoadImages(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Multiselect = true,
+                Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp"
+            };
+            
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                images.Clear();
+                foreach (string filename in openFileDialog.FileNames)
+                {
+                    images.Add(Image.FromFile(filename));
+                }
+                MessageBox.Show($"{images.Count} images loaded.");
+            }
+        }
+
+        private void CombineImages(object sender, EventArgs e)
+        {
+
+            if (images.Count == 0)
+            {
+                MessageBox.Show("No images loaded.");
+                return;
+            }
+
+            int totalWidth = 0;
+            int maxHeight = 0;
+
+            foreach (var image in images)
+            {
+                totalWidth += image.Width;
+                if (image.Height > maxHeight)
+                {
+                    maxHeight = image.Height;
+                }
+            }
+
+            combinedImage = new Bitmap(totalWidth, maxHeight);
+
+            using (Graphics g = Graphics.FromImage(combinedImage))
+            {
+                int currentX = 0;
+                foreach (var image in images)
+                {
+                    g.DrawImage(image, new Point(currentX, 0));
+                    currentX += image.Width;
+                }
+            }
+
+            pictureBox.Image = combinedImage;
+
+
+        }
+        private void SaveCombinedImageAutomatically(String Name)
+        {
+            if (combinedImage != null)
+            {
+                string fileName = Path.Combine(resourcesPath, $"" + Name + ".png");
+                //CombinedImage_{DateTime.Now:yyyyMMdd_HHmmss} or raplace Name with this line in case you want to save a Image as an other date format
+                try
+                {
+                    combinedImage.Save(fileName, System.Drawing.Imaging.ImageFormat.Jpeg);
+                    MessageBox.Show($"Image saved successfully at {fileName}");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error saving image: {ex.Message}");
+                }
+            }
+        }
+      
+
+
+        public void list_elm()
+        {
+            for (int i = 0; i < row.GetLength(0); i++)
+            {
+                list.Add(row[i, 0]);
+            }
+        }
+        public void add_To_list(string elmt)
+        {
+            list.Add(elmt);
+            list_elm();
+        }
+        public Achslasten()
+        {
+            InitializeComponent();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            Menu frm = new Menu();
+            frm.Show();
+            this.Hide();
+        }
+
+        private void GenerateTextBoxes(int values)
+        {
+            System.Windows.Forms.ComboBox comboBox = new System.Windows.Forms.ComboBox
+            {
+                Location = new Point(xPos + comboBoxCount * 26, 43),
+                Size = new Size(40, 23),
+            };
+            comboBox.Items.AddRange(new string[] { "R1", "R2", "R3", "R4" });
+            System.Windows.Forms.PictureBox pbx = new System.Windows.Forms.PictureBox
+            {
+                Location = new Point(xPos + comboBoxCount * 26, 70),
+                Size = new Size(40, 40),
+                BackColor = SystemColors.Window
+            };
+            this.Controls.Add(comboBox);
+            comboBoxes.Add(comboBox);
+            pB.Add(pbx);
+            this.Controls.Add(pbx);
+            comboBoxCount++;
+            xPos += 50;
+            comboBox.SelectedIndexChanged += (sender, e) => comboBox_SelectedIndexChanged(sender, e, pbx, comboBox);
+            imageList.Add(pbx);
+        }
+
+        private void comboBox_SelectedIndexChanged(object sender, EventArgs e, PictureBox pb, System.Windows.Forms.ComboBox cmb)
+        {
+            if (cmb.SelectedItem != null)
+            {
+                string selectedModel = cmb.SelectedItem.ToString();
+                try
+                {
+                    switch (selectedModel)
+                    {
+                        case "R1": pb.Image = Properties.Resources.R1; break;
+                        case "R2": pb.Image = Properties.Resources.R2; break;
+                        case "R3": pb.Image = Properties.Resources.R3; break;
+                        case "R4": pb.Image = Properties.Resources.R4; break;
+                    }
+
+                    
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Fehler beim Laden des Bildes!: " + ex.Message);
+                }
+            }
+
+
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+           /* ImageList imageList = new ImageList();
+            imageList.Images.Add("R1", Properties.Resources.R1);
+            imageList.Images.Add("R2", Properties.Resources.R2);
+            imageList.Images.Add("R3", Properties.Resources.R3);
+            imageList.Images.Add("R4", Properties.Resources.R4);
+            listView1.SmallImageList = imageList; // For small icons
+            listView1.View = View.Details;
+            if (listView1.Columns.Count == 0)
+            {
+                listView1.Columns.Add("Index");
+                listView1.Columns.Add("Model");
+                listView1.Columns.Add("Achse");
+                listView1.Columns.Add("Gewicht");
+                listView1.Columns.Add("Reifen");
+            }*/
+            string ind = textBox1.Text;
+            string mod = textBox2.Text;
+            string ach = textBox3.Text;
+            string gew = textBox4.Text;
+            LoadImages(sender, e);
+            string cmb1 = comboBox1.Text;
+            List<string> reifen = GetSelectedValue();
+            string Ges_REifen = string.Join(", ", new[] { cmb1 }.Concat(reifen));
+            ListViewItem item = new ListViewItem(new string[] { ind, mod, ach, gew, Ges_REifen });
+           /* foreach (string r in reifen)
+            {
+                ListViewItem imageItem = new ListViewItem(new string[] { "", "", "", "", r });
+                switch (r)
+                {
+                    case "R1": imageItem.ImageKey = "R1"; break;
+                    case "R2": imageItem.ImageKey = "R2"; break;
+                    case "R3": imageItem.ImageKey = "R3"; break;
+                    case "R4": imageItem.ImageKey = "R4"; break;
+                    default: imageItem.ImageKey = null; break;
+                }
+                listView1.Items.Add(imageItem);
+            }*/
+           listView1.Items.Add(item);
+            
+            add_To_list(ind);
+            SaveCombinedImageAutomatically(ind);
+
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            val++;
+            GenerateTextBoxes(val);
+        }
+
+        private void deleteTextBoxes(int values)
+        {
+            if (comboBoxes.Count > 0)
+            {
+                System.Windows.Forms.ComboBox comboBoxToRemove = comboBoxes[comboBoxes.Count - 1];
+                System.Windows.Forms.PictureBox picRem = pB[pB.Count - 1];
+                this.Controls.Remove(picRem);
+                this.Controls.Remove(comboBoxToRemove);
+                comboBoxes.RemoveAt(comboBoxes.Count - 1);
+                pB.RemoveAt(pB.Count - 1);
+                comboBoxCount--;
+                xPos -= 50;
+            }
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            val--;
+            deleteTextBoxes(val);
+        }
+
+        private void löschen_Click(object sender, EventArgs e)
+        {
+            listView1.Items.Remove(listView1.SelectedItems[0]);
+        }
+
+        private void Achslasten_Load(object sender, EventArgs e)
+
+        {
+            int xOr = 573;
+            int yOr = 135;
+
+            for (int i = 0; i < row.GetLength(0); i++)
+            {
+                string reifen = $"{row[i, 4]}, {row[i, 5]}, {row[i, 6]}, {row[i, 7]}, {row[i, 8]}, {row[i, 9]}";
+                listView1.Items.Add(new ListViewItem(new string[] { row[i, 0], row[i, 1], row[i, 2], row[i, 3], reifen }));
+            }
+
+            comboBox1.Items.Clear();
+            comboBox1.Items.AddRange(new string[] { "R1", "R2", "R3", "R4" });
+
+            int cnt = listView1.Items.Count;
+
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+
+            if (listView1.SelectedItems.Count > 0)
+            {
+
+                listView1.SelectedItems[0].Text = textBox1.Text;
+                listView1.SelectedItems[0].SubItems[1].Text = textBox2.Text;
+                listView1.SelectedItems[0].SubItems[2].Text = textBox3.Text;
+                listView1.SelectedItems[0].SubItems[3].Text = textBox4.Text;
+            }
+        }
+
+        public void PopulateComboBox(System.Windows.Forms.ComboBox cmb)
+        {
+            list_elm();
+            foreach (var item in list)
+            {
+                cmb.Items.Add(item);
+            }
+        }
+
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (comboBox1.SelectedItem != null)
+            {
+                string selectedModel = comboBox1.SelectedItem.ToString();
+                try
+                {
+                    switch (selectedModel)
+                    {
+                        case "R1": PB1.Image = Properties.Resources.R1; break;
+                        case "R2": PB1.Image = Properties.Resources.R2; break;
+                        case "R3": PB1.Image = Properties.Resources.R3; break;
+                        case "R4": PB1.Image = Properties.Resources.R4; break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Fehler beim Laden des Bildes: " + ex.Message);
+                }
+            }
+        }
+       
+       
+
+        private List<string> GetSelectedValue()
+        {
+            List<string> selectedValues = new List<string>();
+            string selectedValue = string.Empty;
+
+            foreach (var cmb in comboBoxes)
+            {
+                if (cmb.SelectedItem != null)
+                {
+                    selectedValue = cmb.SelectedItem.ToString();
+                    selectedValues.Add(selectedValue);
+                }
+            }
+
+            return selectedValues;
+        }
+        private void listView1_SelectedIndexChanged(object sender, EventArgs e) { }
+
+        private void button4_Click_1(object sender, EventArgs e)
+        {
+        }
+    }
+}
