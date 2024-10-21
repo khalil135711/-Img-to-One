@@ -12,18 +12,18 @@ namespace ImageCombiner
         private PictureBox pictureBox;
         private Bitmap combinedImage;
 
-        // Define a repository path (adjust the path as needed)
-        private string repositoryPath = @"C:\ImageRepository\";
+        // Define the Resources path inside the project output directory
+        private string resourcesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources");
 
         public Form1()
         {
             InitializeComponent();
             SetupUI();
 
-            // Ensure the repository directory exists
-            if (!Directory.Exists(repositoryPath))
+            // Ensure the Resources directory exists
+            if (!Directory.Exists(resourcesPath))
             {
-                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(resourcesPath);
             }
         }
 
@@ -113,7 +113,7 @@ namespace ImageCombiner
             // Display the combined image in the PictureBox
             pictureBox.Image = combinedImage;
 
-            // Automatically save the image
+            // Automatically save the image in the Resources folder
             SaveCombinedImageAutomatically();
         }
 
@@ -122,11 +122,11 @@ namespace ImageCombiner
             if (combinedImage != null)
             {
                 // Create a unique file name based on the current timestamp
-                string fileName = Path.Combine(repositoryPath, $"CombinedImage_{DateTime.Now:yyyyMMdd_HHmmss}.jpg");
+                string fileName = Path.Combine(resourcesPath, $"CombinedImage_{DateTime.Now:yyyyMMdd_HHmmss}.jpg");
 
                 try
                 {
-                    // Save the image automatically in the repository as a JPG file
+                    // Save the image in the Resources folder as a JPG file
                     combinedImage.Save(fileName, System.Drawing.Imaging.ImageFormat.Jpeg);
                     MessageBox.Show($"Image saved successfully at {fileName}");
                 }
