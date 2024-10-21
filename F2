@@ -1,0 +1,140 @@
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
+using System.Windows.Forms;
+
+namespace ImageCombiner
+{
+    public partial class Form1 : Form
+    {
+        private List<Image> images = new List<Image>();
+        private PictureBox pictureBox;
+        private Bitmap combinedImage;
+
+        // Define a repository path (adjust the path as needed)
+        private string repositoryPath = @"C:\ImageRepository\";
+
+        public Form1()
+        {
+            InitializeComponent();
+            SetupUI();
+
+            // Ensure the repository directory exists
+            if (!Directory.Exists(repositoryPath))
+            {
+                Directory.CreateDirectory(repositoryPath);
+            }
+        }
+
+        private void SetupUI()
+        {
+            // Form properties
+            this.Text = "Image Combiner";
+            this.Size = new Size(600, 400);
+
+            // Button to load images
+            Button loadImagesButton = new Button();
+            loadImagesButton.Text = "Load Images";
+            loadImagesButton.Location = new Point(20, 20);
+            loadImagesButton.Click += new EventHandler(LoadImages);
+
+            // Button to combine images
+            Button combineImagesButton = new Button();
+            combineImagesButton.Text = "Combine Images";
+            combineImagesButton.Location = new Point(120, 20);
+            combineImagesButton.Click += new EventHandler(CombineImages);
+
+            // PictureBox to display the combined image
+            pictureBox = new PictureBox();
+            pictureBox.Location = new Point(20, 60);
+            pictureBox.Size = new Size(550, 300);
+            pictureBox.BorderStyle = BorderStyle.Fixed3D;
+
+            // Add controls to the form
+            this.Controls.Add(loadImagesButton);
+            this.Controls.Add(combineImagesButton);
+            this.Controls.Add(pictureBox);
+        }
+
+        private void LoadImages(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Multiselect = true,
+                Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp"
+            };
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                // Load selected images
+                images.Clear();
+                foreach (string filename in openFileDialog.FileNames)
+                {
+                    images.Add(Image.FromFile(filename));
+                }
+                MessageBox.Show($"{images.Count} images loaded.");
+            }
+        }
+
+        private void CombineImages(object sender, EventArgs e)
+        {
+            if (images.Count == 0)
+            {
+                MessageBox.Show("No images loaded.");
+                return;
+            }
+
+            // Combine the images side by side
+            int totalWidth = 0;
+            int maxHeight = 0;
+
+            foreach (var image in images)
+            {
+                totalWidth += image.Width;
+                if (image.Height > maxHeight)
+                {
+                    maxHeight = image.Height;
+                }
+            }
+
+            combinedImage = new Bitmap(totalWidth, maxHeight);
+
+            using (Graphics g = Graphics.FromImage(combinedImage))
+            {
+                int currentX = 0;
+                foreach (var image in images)
+                {
+                    g.DrawImage(image, new Point(currentX, 0));
+                    currentX += image.Width;
+                }
+            }
+
+            // Display the combined image in the PictureBox
+            pictureBox.Image = combinedImage;
+
+            // Automatically save the image
+            SaveCombinedImageAutomatically();
+        }
+
+        private void SaveCombinedImageAutomatically()
+        {
+            if (combinedImage != null)
+            {
+                // Create a unique file name based on the current timestamp
+                string fileName = Path.Combine(repositoryPath, $"CombinedImage_{DateTime.Now:yyyyMMdd_HHmmss}.jpg");
+
+                try
+                {
+                    // Save the image automatically in the repository as a JPG file
+                    combinedImage.Save(fileName, System.Drawing.Imaging.ImageFormat.Jpeg);
+                    MessageBox.Show($"Image saved successfully at {fileName}");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error saving image: {ex.Message}");
+                }
+            }
+        }
+    }
+}
